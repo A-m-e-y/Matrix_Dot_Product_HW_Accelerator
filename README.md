@@ -3,6 +3,7 @@ This project is a HW implementation of Dot Product engine which can multiply two
 
 # Current Status
 
+```bash
 Matrix A (7x5):
     -0.031    -0.031    -0.251    -8.048     0.125
      8.015     2.015    -0.125     0.125     0.031
@@ -68,4 +69,4 @@ C[6][1] => DUT: -0.064204 | SW: -0.045388 --> ❌
 C[6][2] => DUT: -0.063429 | SW: -1.116338 --> ❌
 C[6][3] => DUT: 0.000077 | SW: 0.318609 --> ❌
 ❌ MISMATCH DETECTED
-
+```
