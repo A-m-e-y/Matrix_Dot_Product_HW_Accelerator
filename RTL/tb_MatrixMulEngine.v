@@ -66,17 +66,36 @@ module tb_MatrixMulEngine;
         #10;
 
         // Randomize M, K, N between 1 and 10
-        M = $urandom_range(4, MAX_M);
-        K = $urandom_range(4, MAX_K);
-        N = $urandom_range(4, MAX_N);
+        // M = $urandom_range(4, MAX_M);
+        // K = $urandom_range(4, MAX_K);
+        // N = $urandom_range(4, MAX_N);
+        M = 2;
+        K = 2;
+        N = 2;
 
         // Zero out full matrices first
         for (i = 0; i < MAX_M*MAX_K; i = i + 1) matrix_A[i] = 32'h00000000;
         for (i = 0; i < MAX_K*MAX_N; i = i + 1) matrix_B[i] = 32'h00000000;
 
         // Fill active regions with random floats
+        // matrix_A[0] = 32'h3f800000; // 1.0
+        // matrix_A[1] = 32'h40000000; // 2.0
+        // matrix_A[2] = 32'h40400000; // 3.0
+        // matrix_A[3] = 32'h40800000; // 4.0
+        // matrix_B[0] = 32'h3f800000; // 1.0
+        // matrix_B[1] = 32'h40000000; // 2.0
+        // matrix_B[2] = 32'h40400000; // 3.0
+        // matrix_B[3] = 32'h40800000; // 4.0
         for (i = 0; i < M*K; i = i + 1) matrix_A[i] = random_float32(0);
         for (i = 0; i < K*N; i = i + 1) matrix_B[i] = random_float32(0);
+
+
+        $display("Matrix A:");
+        for (i = 0; i < M*K; i = i + 1) $display("%08h", matrix_A[i]);
+        
+        $display("Matrix B:");
+        for (i = 0; i < K*N; i = i + 1) $display("%08h", matrix_B[i]);
+
 
         #10;
         start = 1;
@@ -85,6 +104,9 @@ module tb_MatrixMulEngine;
 
         wait (done);
         #20;
+
+        $display("Matrix C:");
+        for (i = 0; i < M*N; i = i + 1) $display("%08h", matrix_C[i]);
 
         // Dump to file
         $fdisplay(outfile, "M: %0d, K: %0d", M, K);
