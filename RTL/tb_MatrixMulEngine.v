@@ -1,16 +1,16 @@
 `timescale 1ns/1ps
 
 module tb_MatrixMulEngine;
-    parameter MAX_M = 10;
-    parameter MAX_K = 10;
-    parameter MAX_N = 10;
+    parameter MAX_M = 100;
+    parameter MAX_K = 100;
+    parameter MAX_N = 100;
 
     reg clk;
     reg rst_n;
     reg start;
     wire done;
 
-    integer M, K, N;
+    reg [7:0] M, K, N;
 
     reg  [31:0] matrix_A [0:MAX_M*MAX_K-1];
     reg  [31:0] matrix_B [0:MAX_K*MAX_N-1];
@@ -26,9 +26,12 @@ module tb_MatrixMulEngine;
     end
 
     // Instantiate DUT with static max sizes; only use M, K, N values dynamically
-    MatrixMulEngine #(.M(MAX_M), .K(MAX_K), .N(MAX_N)) dut (
+    MatrixMulEngine #(.MAX_M(MAX_M), .MAX_K(MAX_K), .MAX_N(MAX_N)) dut (
         .clk(clk),
         .rst_n(rst_n),
+        .M_val(M),
+        .K_val(K),
+        .N_val(N),
         .start(start),
         .done(done),
         .matrix_A(matrix_A),
@@ -65,13 +68,13 @@ module tb_MatrixMulEngine;
         rst_n = 1;
         #10;
 
-        // Randomize M, K, N between 1 and 10
-        // M = $urandom_range(4, MAX_M);
-        // K = $urandom_range(4, MAX_K);
-        // N = $urandom_range(4, MAX_N);
-        M = 2;
-        K = 2;
-        N = 2;
+        // Randomize M, K, N between 2 and 10
+        M = $urandom_range(2, MAX_M);
+        K = $urandom_range(2, MAX_K);
+        N = $urandom_range(2, MAX_N);
+        // M = 2;
+        // K = 2;
+        // N = 2;
 
         // Zero out full matrices first
         for (i = 0; i < MAX_M*MAX_K; i = i + 1) matrix_A[i] = 32'h00000000;
