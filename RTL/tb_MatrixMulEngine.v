@@ -69,9 +69,9 @@ module tb_MatrixMulEngine;
         #10;
 
         // Randomize M, K, N between 2 and 10
-        M = $urandom_range(5, MAX_M);
-        K = $urandom_range(5, MAX_K);
-        N = $urandom_range(5, MAX_N);
+        M = $urandom_range(10, MAX_M);
+        K = $urandom_range(10, MAX_K);
+        N = $urandom_range(10, MAX_N);
         // M = 50;
         // K = 50;
         // N = 50;

@@ -2,3 +2,4 @@
 a.out
 __pycache__/
 *.pyc
+matrix_result_dump.txt
