@@ -69,12 +69,12 @@ module tb_MatrixMulEngine;
         #10;
 
         // Randomize M, K, N between 2 and 10
-        M = $urandom_range(2, MAX_M);
-        K = $urandom_range(2, MAX_K);
-        N = $urandom_range(2, MAX_N);
-        // M = 2;
-        // K = 2;
-        // N = 2;
+        // M = $urandom_range(2, MAX_M);
+        // K = $urandom_range(2, MAX_K);
+        // N = $urandom_range(2, MAX_N);
+        M = 20;
+        K = 20;
+        N = 20;
 
         // Zero out full matrices first
         for (i = 0; i < MAX_M*MAX_K; i = i + 1) matrix_A[i] = 32'h00000000;

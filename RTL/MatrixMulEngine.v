@@ -1,9 +1,9 @@
 `timescale 1ns/1ps
 
 module MatrixMulEngine #(
-    parameter MAX_M = 10,
-    parameter MAX_K = 10,
-    parameter MAX_N = 10
+    parameter MAX_M = 100,
+    parameter MAX_K = 100,
+    parameter MAX_N = 100
 )(
     input wire clk,
     input wire rst_n,
@@ -21,28 +21,29 @@ module MatrixMulEngine #(
 
     reg [1:0] state;
     localparam IDLE = 2'b00,
-               LOAD_ROW = 2'b01,
-               WAIT_DPE = 2'b10,
-               STORE = 2'b11;
+               WAIT_DPE = 2'b01,
+               STORE = 2'b10;
 
     integer i;
     reg [7:0] row_idx, col_idx;
-    reg [7:0] load_idx;
-
-    reg [31:0] patch_buffer [0:MAX_K-1];
-    reg [31:0] filter_buffer [0:MAX_K-1];
 
     reg  dpe_start;
     wire dpe_done;
     wire [31:0] dpe_result;
     wire [9:0] dpe_patch_addr, dpe_filter_addr;
-    reg  [31:0] dpe_patch_data, dpe_filter_data;
+    wire [31:0] dpe_patch_data, dpe_filter_data;
+
+    wire [15:0] a_index = row_idx * K_val + dpe_patch_addr;
+    wire [15:0] b_index = dpe_filter_addr * N_val + col_idx;
+    wire [15:0] c_index = row_idx * N_val + col_idx;
+
+    wire [9:0] vec_len_ext = {2'b00, K_val};
 
     DotProductEngine dpe_inst (
         .clk(clk),
         .rst_n(rst_n),
         .start(dpe_start),
-        .vec_length({2'b00, K_val}),
+        .vec_length(vec_len_ext),
         .patch_data(dpe_patch_data),
         .filter_data(dpe_filter_data),
         .done(dpe_done),
@@ -51,12 +52,14 @@ module MatrixMulEngine #(
         .filter_addr(dpe_filter_addr)
     );
 
+    assign dpe_patch_data  = matrix_A[a_index];
+    assign dpe_filter_data = matrix_B[b_index];
+
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             state <= IDLE;
             row_idx <= 0;
             col_idx <= 0;
-            load_idx <= 0;
             dpe_start <= 0;
             done <= 0;
         end else begin
@@ -66,20 +69,8 @@ module MatrixMulEngine #(
                     if (start) begin
                         row_idx <= 0;
                         col_idx <= 0;
-                        load_idx <= 0;
-                        state <= LOAD_ROW;
-                    end
-                end
-
-                LOAD_ROW: begin
-                    patch_buffer[load_idx] <= matrix_A[row_idx * K_val + load_idx];
-                    filter_buffer[load_idx] <= matrix_B[load_idx * N_val + col_idx];
-                    if (load_idx == K_val - 1) begin
-                        load_idx <= 0;
                         dpe_start <= 1;
                         state <= WAIT_DPE;
-                    end else begin
-                        load_idx <= load_idx + 1;
                     end
                 end
 
@@ -91,14 +82,16 @@ module MatrixMulEngine #(
                 end
 
                 STORE: begin
-                    matrix_C[row_idx * N_val + col_idx] <= dpe_result;
+                    matrix_C[c_index] <= dpe_result;
                     if (col_idx < N_val - 1) begin
                         col_idx <= col_idx + 1;
-                        state <= LOAD_ROW;
+                        dpe_start <= 1;
+                        state <= WAIT_DPE;
                     end else if (row_idx < M_val - 1) begin
                         row_idx <= row_idx + 1;
                         col_idx <= 0;
-                        state <= LOAD_ROW;
+                        dpe_start <= 1;
+                        state <= WAIT_DPE;
                     end else begin
                         done <= 1;
                         state <= IDLE;
@@ -106,11 +99,6 @@ module MatrixMulEngine #(
                 end
             endcase
         end
-    end
-
-    always @(posedge clk) begin
-        dpe_patch_data  <= patch_buffer[dpe_patch_addr];
-        dpe_filter_data <= filter_buffer[dpe_filter_addr];
     end
 
 endmodule
